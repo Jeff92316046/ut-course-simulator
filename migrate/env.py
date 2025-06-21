@@ -3,9 +3,9 @@ import os
 
 
 current_alembic_dir = os.path.dirname(__file__)
-project_root = os.path.abspath(os.path.join(current_alembic_dir, '..'))
+project_root = os.path.abspath(os.path.join(current_alembic_dir, ".."))
 sys.path.insert(0, project_root)
-sys.path.insert(0, os.path.join(project_root, 'src'))
+sys.path.insert(0, os.path.join(project_root, "src"))
 
 from logging.config import fileConfig
 
@@ -78,9 +78,7 @@ def run_migrations_online() -> None:
     )
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()
