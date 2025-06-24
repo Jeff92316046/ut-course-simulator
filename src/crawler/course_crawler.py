@@ -42,7 +42,9 @@ def get_course_data(driver: LocalWebDriver | RemoteWebDriver):
     for i in range(college_options_len):
         driver.switch_to.default_content()
         driver.switch_to.frame("304_top")
-        college_select = driver.find_element(XPATH, "//*[@id='dpt_id']")  # collage select
+        college_select = driver.find_element(
+            XPATH, "//*[@id='dpt_id']"
+        )  # collage select
         college_option = college_select.find_elements(TAG_NAME, "option")[i]
         college_name = college_option.text.strip()
         college_option.click()
@@ -148,12 +150,16 @@ def parse_and_save_data(driver: LocalWebDriver | RemoteWebDriver, colleage: str)
             )
             stmt = stmt.on_conflict_do_nothing(index_elements=["name"])
             db_session.exec(stmt)
-            db_session.flush()      
+            db_session.flush()
             teachers = db_session.exec(
-                select(Teacher).where(col(Teacher.name).in_([teacher.name for teacher in teachers])) 
+                select(Teacher).where(
+                    col(Teacher.name).in_([teacher.name for teacher in teachers])
+                )
             )
             for teacher in teachers:
-                course_teachers.append(CourseTeacher(course_id=course.id, teacher_id=teacher.id))
+                course_teachers.append(
+                    CourseTeacher(course_id=course.id, teacher_id=teacher.id)
+                )
             db_session.add_all(course_teachers)
             db_session.add_all(course_schedules)
             db_session.commit()
