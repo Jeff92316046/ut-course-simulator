@@ -1,6 +1,9 @@
 from fastapi import FastAPI
 from core.config import settings
 from api.router import api_router
+import bcrypt
+if not hasattr(bcrypt, '__about__'):
+    bcrypt.__about__ = type('about', (object,), {'__version__': bcrypt.__version__})
 
 app = FastAPI(
     title="ut-course-simulator",
