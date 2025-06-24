@@ -7,6 +7,7 @@ from sqlmodel import SQLModel, Field, Relationship, UniqueConstraint
 from sqlalchemy.orm import Mapped
 from core.config import settings
 
+
 class CourseTypeEnum(str, Enum):
     REQUIRED = "required"
     ELECTIVE = "elective"

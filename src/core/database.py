@@ -9,6 +9,7 @@ engine = create_engine(
     max_overflow=30,
 )
 
+
 def get_db():
     session = Session(engine)
     try:

@@ -71,6 +71,7 @@ def login(
 
     return TokenResponse(access_token=access_token)
 
+
 @router.post("/refresh_token", response_model=TokenResponse)
 def refresh_token(
     response: Response,
