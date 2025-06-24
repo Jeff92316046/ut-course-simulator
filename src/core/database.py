@@ -1,6 +1,5 @@
 from sqlmodel import create_engine, Session
 from sqlalchemy_utils import database_exists, create_database
-from contextlib import contextmanager
 from core.config import settings
 
 engine = create_engine(
@@ -10,8 +9,6 @@ engine = create_engine(
     max_overflow=30,
 )
 
-
-@contextmanager
 def get_db():
     session = Session(engine)
     try:
