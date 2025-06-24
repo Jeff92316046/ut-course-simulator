@@ -1,8 +1,7 @@
 from datetime import datetime, timedelta, timezone
-import uuid
 
-from fastapi import HTTPException, status, Request, Response
-from sqlmodel import Session, select, update
+from fastapi import HTTPException, status, Request
+from sqlmodel import Session, select
 
 from model import User
 from model import RefreshToken
@@ -13,7 +12,7 @@ from core.security import (
     create_refresh_token,
     verify_refresh_token,
 )
-from schemas.auth import LoginRequest, RegisterRequest, TokenResponse
+from schemas.auth import LoginRequest, RegisterRequest
 from core.config import settings
 
 

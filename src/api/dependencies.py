@@ -1,4 +1,4 @@
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException
 from sqlmodel import select, Session
 
 from core.security import oauth2_scheme, decode_access_token

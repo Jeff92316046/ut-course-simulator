@@ -17,7 +17,7 @@ from typing import List, Tuple
 import re
 
 from sqlalchemy.dialects import postgresql
-from sqlmodel import Session, select, col
+from sqlmodel import select, col
 from core.database import get_db
 
 URL = "https://shcourse.utaipei.edu.tw/utaipei/ag_pro/ag304_index.jsp"

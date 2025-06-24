@@ -1,11 +1,9 @@
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timezone
 from typing import List
 from enum import Enum
 
 from sqlmodel import SQLModel, Field, Relationship, UniqueConstraint
-from sqlalchemy.orm import Mapped
-from core.config import settings
 
 
 class CourseTypeEnum(str, Enum):
