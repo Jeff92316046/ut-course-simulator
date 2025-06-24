@@ -1,7 +1,4 @@
-from dotenv import load_dotenv
 from pydantic_settings import BaseSettings
-
-load_dotenv()
 
 
 class Settings(BaseSettings):
@@ -11,6 +8,10 @@ class Settings(BaseSettings):
     POSTGRES_PASSWORD: str
     POSTGRES_DB: str
     CRAWLER_MODE: str
+    JWT_SECRET_KEY: str
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
+    REFRESH_TOKEN_EXPIRE_DAYS: int = 15
+    APP_MODE: str = "dev"
 
     @property
     def database_url(self):
