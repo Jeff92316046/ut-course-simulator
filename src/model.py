@@ -5,6 +5,7 @@ from enum import Enum
 
 from sqlmodel import SQLModel, Field, Relationship, UniqueConstraint
 from sqlalchemy.orm import Mapped
+from core.config import settings
 
 class CourseTypeEnum(str, Enum):
     REQUIRED = "required"
@@ -19,10 +20,6 @@ class WeekPatternEnum(str, Enum):
 
 def default_created_at() -> datetime:
     return datetime.now(tz=timezone.utc)
-
-
-def default_expires_at() -> datetime:
-    return datetime.now(tz=timezone.utc) + timedelta(days=14)
 
 
 class CourseTeacher(SQLModel, table=True):
@@ -96,7 +93,7 @@ class Course(SQLModel, table=True):
     college: str = Field(nullable=False, index=True)  # 學院
     name: str = Field(nullable=False, index=True)  # 課程名稱
     credit: int = Field(nullable=False)  # 學分
-    classroom: str | None = Field(default=None) # 課程地點
+    classroom: str | None = Field(default=None)  # 課程地點
     field: str | None = Field(default=None, index=True)  # 領域
     campus_area: str | None = Field(default=None)  # 校區區域
     course_type: CourseTypeEnum = Field(nullable=False)  # 課程類型 (必修/選修)
@@ -147,7 +144,7 @@ class RefreshToken(SQLModel, table=True):
     ip_address: str | None = Field(default=None)
 
     created_at: datetime = Field(default_factory=default_created_at)
-    expires_at: datetime = Field(default_factory=default_expires_at)
+    expires_at: datetime = Field(nullable=False)
     last_used_at: datetime | None = Field(default=None)
     revoked: bool = Field(default=False)
 
