@@ -11,17 +11,16 @@ from services.auth_service import AuthService
 oauth_router = APIRouter(tags=["OAuth2 Auth"])
 auth_service = AuthService()
 
+
 @oauth_router.post("/token", response_model=TokenResponse)
 async def login_for_access_token(
     response: Response,
     request: Request,
     form_data: OAuth2PasswordRequestForm = Depends(),
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
     access_token, raw_refresh_token = auth_service.login(
-        LoginRequest(email=form_data.username, password=form_data.password),
-        db,
-        request
+        LoginRequest(email=form_data.username, password=form_data.password), db, request
     )
 
     expires_at_timestamp = (
