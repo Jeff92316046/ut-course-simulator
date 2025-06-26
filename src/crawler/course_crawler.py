@@ -1,3 +1,4 @@
+import uuid
 from crawler.selenuim_helper import XPATH, TAG_NAME
 from selenium.webdriver.chrome.webdriver import WebDriver as LocalWebDriver
 from selenium.webdriver.remote.webdriver import WebDriver as RemoteWebDriver
@@ -92,6 +93,7 @@ def parse_and_save_data(driver: LocalWebDriver | RemoteWebDriver, colleage: str)
     teachers: list[Teacher] = []
     course_teachers: list[CourseTeacher] = []
     course_schedules: list[CourseSchedule] = []
+    teacher_course_pairs: list[tuple[str, uuid.UUID]] = []
     for row_element in row_elements[1:]:
         course = Course()
         course.class_name = class_name
@@ -126,6 +128,7 @@ def parse_and_save_data(driver: LocalWebDriver | RemoteWebDriver, colleage: str)
             for teacher_name in teacher_list:
                 teacher = Teacher(name=teacher_name)
                 teachers.append(teacher)
+                teacher_course_pairs.append((teacher_name, course.id))
             course.classroom = location
             course_schedule = CourseSchedule(
                 day_of_week=day_of_week,
@@ -143,7 +146,7 @@ def parse_and_save_data(driver: LocalWebDriver | RemoteWebDriver, colleage: str)
     for course in courses:
         print(f"Course: {course.college} {course.class_name} {course.name}")
     try:
-        with get_db() as db_session:
+        with next(get_db()) as db_session:
             db_session.add_all(courses)
             stmt = postgresql.insert(Teacher).values(
                 [teacher.model_dump(exclude={"id"}) for teacher in teachers]
@@ -151,15 +154,15 @@ def parse_and_save_data(driver: LocalWebDriver | RemoteWebDriver, colleage: str)
             stmt = stmt.on_conflict_do_nothing(index_elements=["name"])
             db_session.exec(stmt)
             db_session.flush()
-            teachers = db_session.exec(
+            db_teachers = db_session.exec(
                 select(Teacher).where(
-                    col(Teacher.name).in_([teacher.name for teacher in teachers])
+                    col(Teacher.name).in_([name for name, _ in teacher_course_pairs])
                 )
-            )
-            for teacher in teachers:
-                course_teachers.append(
-                    CourseTeacher(course_id=course.id, teacher_id=teacher.id)
-                )
+            ).all()
+            for teacher in db_teachers:
+                for name, course_id in teacher_course_pairs:
+                    if teacher.name == name:
+                        course_teachers.append(CourseTeacher(course_id=course_id, teacher_id=teacher.id))
             db_session.add_all(course_teachers)
             db_session.add_all(course_schedules)
             db_session.commit()
