@@ -162,7 +162,9 @@ def parse_and_save_data(driver: LocalWebDriver | RemoteWebDriver, colleage: str)
             for teacher in db_teachers:
                 for name, course_id in teacher_course_pairs:
                     if teacher.name == name:
-                        course_teachers.append(CourseTeacher(course_id=course_id, teacher_id=teacher.id))
+                        course_teachers.append(
+                            CourseTeacher(course_id=course_id, teacher_id=teacher.id)
+                        )
             db_session.add_all(course_teachers)
             db_session.add_all(course_schedules)
             db_session.commit()
@@ -176,38 +178,59 @@ def parse_course_string(
 ) -> Tuple[List[str], int | None, int | None, int | None, str, WeekPatternEnum]:
     clean_string = raw_string.strip()
 
+    week_pattern = WeekPatternEnum.EVERY_WEEK
+    if "(單週)" in clean_string:
+        week_pattern = WeekPatternEnum.ODD_WEEKS
+        clean_string = (
+            clean_string.replace("(單週)", " ").replace("(雙週)", " ").strip()
+        )
+    elif "(雙週)" in clean_string:
+        week_pattern = WeekPatternEnum.EVEN_WEEKS
+        clean_string = (
+            clean_string.replace("(雙週)", " ").replace("(單週)", " ").strip()
+        )
+
     if "時間未定" in clean_string:
-        teacher_name = clean_string.split("時間未定")[0].strip()
-        teachers = [teacher_name] if teacher_name else ["無"]
+        teacher_part = re.split(r"[/、\s]*時間未定", clean_string, 1)[0]
+        cleaned_teacher_names = teacher_part.strip("、/, ")
 
-        # 嘗試提取括號內的教室名稱
-        match = re.search(r"[(（](.*?)[)）]", clean_string)
-        location = match.group(1).strip() if match else "教室未定"
+        if not cleaned_teacher_names:
+            teachers = ["無"]
+        else:
+            teachers = [
+                t.strip()
+                for t in re.split(r"[、,]", cleaned_teacher_names)
+                if t.strip()
+            ]
 
-        return teachers, None, None, None, location, WeekPatternEnum.EVERY_WEEK
+        location = "教室未定"
+        loc_match = re.search(r"[(（](.*?)[)）]", clean_string)
+        if loc_match:
+            location_content = loc_match.group(1).strip()
+            if "教室未定" not in location_content:
+                location = location_content
+        elif "教室未定" in clean_string:
+            location = "教室未定"
+
+        return teachers, None, None, None, location, week_pattern
 
     all_teachers = []
     all_locations = set()
     min_start_period = float("inf")
     max_end_period = float("-inf")
     day_of_week = None
-    week_pattern = WeekPatternEnum.EVERY_WEEK
 
     lines = [line.strip() for line in clean_string.split("\n") if line.strip()]
 
     for line in lines:
-        if line.startswith("(單週)"):
-            week_pattern = WeekPatternEnum.ODD_WEEKS
-            line = line.replace("(單週)", "").strip()
-        elif line.startswith("(雙週)"):
-            week_pattern = WeekPatternEnum.EVEN_WEEKS
-            line = line.replace("(雙週)", "").strip()
-
         teacher_match = re.match(r"(.+?)\s*\(", line)
         if not teacher_match:
+            if line.strip() and all_teachers:
+                all_teachers.append(line.strip())
             continue
 
-        teacher_name = teacher_match.group(1).strip()
+        potential_name = teacher_match.group(1)
+        teacher_name = re.sub(r"\s+\d+$", "", potential_name).strip()
         all_teachers.append(teacher_name)
 
         time_loc_part = line[teacher_match.end(1) :].strip()
@@ -235,10 +258,16 @@ def parse_course_string(
 
             all_locations.add(location.strip())
 
+    if not all_teachers and not all_locations:
+        if clean_string:
+            return [clean_string], None, None, None, "", week_pattern
+        else:
+            return [], None, None, None, "", week_pattern
+
     if min_start_period == float("inf"):
         return list(dict.fromkeys(all_teachers)), None, None, None, "", week_pattern
 
-    location_str = "、".join(sorted(list(all_locations)))
+    location_str = "、".join(sorted(all_locations))
 
     return (
         list(dict.fromkeys(all_teachers)),
