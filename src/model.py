@@ -3,7 +3,7 @@ from datetime import datetime, timezone
 from typing import List
 from enum import Enum
 
-from sqlmodel import SQLModel, Field, Relationship, UniqueConstraint
+from sqlmodel import SQLModel, Field, Relationship, UniqueConstraint, DateTime, func
 
 
 class CourseTypeEnum(str, Enum):
@@ -21,6 +21,10 @@ def default_created_at() -> datetime:
     return datetime.now(tz=timezone.utc)
 
 
+def default_updated_at() -> datetime:
+    return datetime.now(tz=timezone.utc)
+
+
 class CourseTeacher(SQLModel, table=True):
     __tablename__ = "course_teachers"
 
@@ -29,15 +33,22 @@ class CourseTeacher(SQLModel, table=True):
     teacher_id: uuid.UUID = Field(foreign_key="teachers.id")
 
 
-class UserCourse(SQLModel, table=True):
-    __tablename__ = "user_courses"
+class CourseSelection(SQLModel, table=True):
+    __tablename__ = "course_selections"
     id: int | None = Field(default=None, primary_key=True)
     course_table_id: uuid.UUID = Field(foreign_key="course_tables.id")
     course_id: uuid.UUID = Field(foreign_key="courses.id")
+    note: str | None = Field(default=None, max_length=500)  # 備註
+    created_at: datetime = Field(default_factory=default_created_at)
+    updated_at: datetime = Field(
+        default_factory=default_created_at,
+        sa_type=DateTime(),
+        sa_column_kwargs={
+            "onupdate": default_updated_at,
+        },
+    )
 
-    enrollment_date: datetime = Field(default_factory=default_created_at)
-
-    course_table: "CourseTable" = Relationship(back_populates="user_courses")
+    course_table: "CourseTable" = Relationship(back_populates="course_selections")
     course: "Course" = Relationship()
 
 
@@ -61,9 +72,18 @@ class CourseTable(SQLModel, table=True):
     academic_year_semester: str = Field(
         nullable=False, index=True
     )  # e.g., '113-1', '113-2'
-
+    created_at: datetime = Field(default_factory=default_created_at)
+    updated_at: datetime = Field(
+        default_factory=default_created_at,
+        sa_type=DateTime(),
+        sa_column_kwargs={
+            "onupdate": default_updated_at,
+        },
+    )
     user: "User" = Relationship(back_populates="course_table_lists")
-    user_courses: List["UserCourse"] = Relationship(back_populates="course_table")
+    course_selections: List["CourseSelection"] = Relationship(
+        back_populates="course_table"
+    )
 
 
 class User(SQLModel, table=True):
@@ -74,7 +94,14 @@ class User(SQLModel, table=True):
     name: str | None = Field(default=None)
     hashed_password: str = Field(nullable=False)
     is_active: bool = Field(default=True)
-
+    created_at: datetime = Field(default_factory=default_created_at)
+    updated_at: datetime = Field(
+        default_factory=default_created_at,
+        sa_type=DateTime(),
+        sa_column_kwargs={
+            "onupdate": default_updated_at,
+        },
+    )
     refresh_tokens: List["RefreshToken"] = Relationship(back_populates="user")
 
     course_table_lists: List["CourseTable"] = Relationship(back_populates="user")
