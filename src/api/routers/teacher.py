@@ -25,13 +25,16 @@ def search_teachers(
     *,
     db: Session = Depends(get_db),
     current_user: User = Depends(get_current_user),
-    name: str = Query(..., min_length=1, description="Partial or full teacher name for fuzzy search"),
+    name: str = Query(
+        ..., min_length=1, description="Partial or full teacher name for fuzzy search"
+    ),
 ):
     teachers = service.search_teachers_by_name(db, name_query=name)
 
     response_data = [TeacherResponse.model_validate(teacher) for teacher in teachers]
 
     return response_data
+
 
 @router.get("/{teacher_id}/courses", response_model=List[CourseResponse])
 def get_all_courses_taught_by_teacher(
