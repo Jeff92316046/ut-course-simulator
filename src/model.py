@@ -35,7 +35,7 @@ class CourseTeacher(SQLModel, table=True):
 
 class CourseSelection(SQLModel, table=True):
     __tablename__ = "course_selections"
-    id: int | None = Field(default=None, primary_key=True)
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True, index=True)
     course_table_id: uuid.UUID = Field(foreign_key="course_tables.id")
     course_id: uuid.UUID = Field(foreign_key="courses.id")
     note: str | None = Field(default=None, max_length=500)  # 備註
