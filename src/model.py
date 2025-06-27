@@ -51,6 +51,12 @@ class CourseSelection(SQLModel, table=True):
     course_table: "CourseTable" = Relationship(back_populates="course_selections")
     course: "Course" = Relationship()
 
+    __table_args__ = (
+        UniqueConstraint(
+            "course_table_id", "course_id", name="uix_course_table_course"
+        ),
+    )
+
 
 class Teacher(SQLModel, table=True):
     __tablename__ = "teachers"
@@ -82,7 +88,8 @@ class CourseTable(SQLModel, table=True):
     )
     user: "User" = Relationship(back_populates="course_table_lists")
     course_selections: List["CourseSelection"] = Relationship(
-        back_populates="course_table"
+        back_populates="course_table",
+        sa_relationship_kwargs={"cascade": "all, delete-orphan"},
     )
 
 
