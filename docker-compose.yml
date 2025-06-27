@@ -1,6 +1,6 @@
 services:
   api:
-    image: ut-course-simulator:0.1.0
+    image: ghcr.io/jeff92316046/ut-course-simulator:0.1.0
     container_name: ut-course-simulater
     depends_on:
       - db
@@ -16,7 +16,7 @@ services:
     env_file:
       - .env
     ports:
-      - "5434:5432"
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     restart: always
