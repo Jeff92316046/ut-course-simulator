@@ -1,6 +1,6 @@
 # ut-course-simulator
 
-ut-course-simulator is a backend system built with FastAPI and SQLModel for managing and querying university course data. It supports user authentication (with JWT and refresh tokens), course and teacher lookup, and personal course table management.
+ut-course-simulator is a backend system built with FastAPI and SQLModel for managing and querying university course data. It supports course and teacher lookup, and personal course table management.
 
 ## Features
 
